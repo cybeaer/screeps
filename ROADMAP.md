@@ -40,3 +40,6 @@
 
 #### add soldier definitions
 * global.soldiers()
+
+#### ToDo
+* claimer need attack definition for destroing walls (flag)
