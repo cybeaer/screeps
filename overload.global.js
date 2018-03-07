@@ -76,7 +76,8 @@ global.roles = {
             [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
             [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
             [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
-            [],[]
+            [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
+            [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]
         ],
         job: 'worker',
         role: ROLE_UPGRADER,
@@ -99,7 +100,8 @@ global.roles = {
             [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
             [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
             [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
-            [],[]
+            [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE],
+            [WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE]
         ],
         job: 'worker',
         role: ROLE_BUILDER,
@@ -122,7 +124,8 @@ global.roles = {
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-            [],[]
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]
         ],
         job: 'transporter',
         role: ROLE_DISPATCHER,
@@ -146,7 +149,8 @@ global.roles = {
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-            [],[]
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]
         ],
         job: 'transporter',
         role: ROLE_RECHARGER,
@@ -206,7 +210,20 @@ global.roles = {
                 MOVE,MOVE,MOVE,MOVE,MOVE,
                 HEAL,MOVE
             ],
-            [],[]
+            [
+                TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
+                TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
+                TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
+                TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
+                TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
+                TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,
+                ATTACK,ATTACK,ATTACK,
+                MOVE,MOVE,MOVE,MOVE,MOVE,
+                MOVE,MOVE,MOVE,MOVE,MOVE,
+                MOVE,MOVE,MOVE,MOVE,MOVE,
+                HEAL,MOVE
+            ],
+            []
         ],
         job: 'security',
         role: ROLE_GUARD,
@@ -237,12 +254,12 @@ global.roles = {
 
 global.requirements = [
     {},
-    { harvester: 1, dispatcher: 0, upgrader: 1, builder: 2, guard: 1, recharger: 0 },  // Room Lvl 1
+    { harvester: 1, upgrader: 1, builder: 2, guard: 1},  // Room Lvl 1
     { harvester: 1, dispatcher: 1, upgrader: 1, builder: 2, guard: 1, recharger: 1 },  // Room Lvl 2
     { harvester: 1, dispatcher: 1, upgrader: 1, builder: 2, guard: 1, recharger: 1 },  // Room Lvl 3
     { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 2, recharger: 1 },  // Room Lvl 4
     { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 2, recharger: 1 },  // Room Lvl 5
     { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 3, recharger: 1 },  // Room Lvl 6
-    { },  // Room Lvl 7
-    { }   // Room Lvl 8
+    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 3, recharger: 1 },  // Room Lvl 7
+    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 3, recharger: 1 },  // Room Lvl 8
 ];
