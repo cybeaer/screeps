@@ -19,11 +19,6 @@ module.exports = {
             }else{
                 if(creep.claimController(creep.room.controller) === ERR_NOT_IN_RANGE){
                     creep.moveTo(creep.room.controller);
-                    if(constructs[15]){
-                        if(creep.attack(constructs[15]) === ERR_NOT_IN_RANGE){
-                            creep.moveTo(constructs[15]);
-                        }
-                    }
                 }else{
                     manualSpawn(creep.memory.origSpawn,'builder',1,creep.memory.room);
                     creep.memory.role =  'builder';
@@ -149,6 +144,9 @@ module.exports = {
             case ROLE_HARVESTER:
                 this.mining(creep);
                 break;
+            case ROLE_MINER:
+                this.mining(creep);
+                break;
             case ROLE_UPGRADER:
                 this.upgrading(creep);
                 break;
@@ -211,7 +209,9 @@ module.exports = {
                 if(!to){
                     to = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);    
                 }
-                this.dispatch(creep,from,to);
+                if(from && to) {
+                    this.dispatch(creep, from, to);
+                }
                 break;
             case ROLE_RECHARGER:
                 this.loadStatus(creep);
@@ -221,7 +221,9 @@ module.exports = {
                 }
                 options.inverted = false;
                 to = creep.room.getStructures([STRUCTURE_TOWER],creep,options);
-                this.dispatch(creep,from,to);
+                if(from && to) {
+                    this.dispatch(creep, from, to);
+                }
                 break;    
             default:
                 creep.say('*'+creep.getRole()+'*');
