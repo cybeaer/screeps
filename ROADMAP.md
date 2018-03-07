@@ -15,8 +15,8 @@
 * 4 ✓
 * 5 ✓
 * 6 ✓
-* 7
-* 8
+* 7 (✓)
+* 8 (✓)
 
 #### code roles
 * harvester ✓
@@ -42,4 +42,4 @@
 * global.soldiers()
 
 #### ToDo
-* claimer need attack definition for destroing walls (flag)
+* claimer need attack definition for destroing walls (flag) ✓
