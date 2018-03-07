@@ -83,7 +83,7 @@ module.exports = {
         const target = new RoomPosition(25,25,creep.memory.room);
         const path = creep.pos.findPathTo(target);
         if(path){
-            creep.moveByPath(path,{visualizePathStyle: {stroke: '#ffd557'}});
+            creep.moveByPath(path);
         }
     },
     work(room){

@@ -6,12 +6,15 @@ global.BUILDING_FLAG = 0;
 module.exports = {
     claimer(creep){
         if(creep.room.name === creep.memory.room){
-            let constructs = creep.room.find(FIND_STRUCTURES,{
-                filter: {structureType: STRUCTURE_WALL}
-            });
-            if(constructs[15]){
-                if(creep.attack(constructs[15]) === ERR_NOT_IN_RANGE){
-                    creep.moveTo(constructs[15]);
+            let blockingWall = null;
+            if(Game.flags['destroy_wall']) {
+                blockingWall = Game.flags['destroy_wall'].pos.findClosestByRange(FIND_STRUCTURES, {
+                    filter: {structureType: STRUCTURE_WALL}
+                });
+            }
+            if(blockingWall){
+                if(creep.attack(blockingWall) === ERR_NOT_IN_RANGE){
+                    creep.moveTo(blockingWall);
                 }
             }else{
                 if(creep.claimController(creep.room.controller) === ERR_NOT_IN_RANGE){
@@ -37,8 +40,6 @@ module.exports = {
         }
     },
     harvest(creep,idx,type=RESOURCE_ENERGY){
-        //Game.flags[creep.room.name+'_mining'].pos.findClosestByRange(FIND_SOURCES)
-        //let sources = creep.room.getSources(type);
         let targetFlag = (idx===MINING_FLAG) ? '_mining' : '_building';
         let sources = Game.flags[creep.room.name+targetFlag].pos.findClosestByRange(FIND_SOURCES)
         if(sources){
@@ -92,7 +93,7 @@ module.exports = {
     upgrading(creep){
         this.loadStatus(creep);
         if(!creep.memory.loaded) { // load up
-            this.harvest(creep,0,RESOURCE_ENERGY);
+            this.harvest(creep,BUILDING_FLAG,RESOURCE_ENERGY);
         }else {
             if (creep.room.controller) {
                 if (creep.upgradeController(creep.room.controller) === ERR_NOT_IN_RANGE) {
@@ -105,7 +106,7 @@ module.exports = {
     building(creep){
         this.loadStatus(creep);
         if(!creep.memory.loaded) { // load up
-            this.harvest(creep,0,RESOURCE_ENERGY);
+            this.harvest(creep,BUILDING_FLAG,RESOURCE_ENERGY);
             creep.memory.buildingId = 0;
         }else {
             let target = creep.room.getConstructionSites(creep,true);
