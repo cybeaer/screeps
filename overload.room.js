@@ -72,9 +72,9 @@ Room.prototype.getWallTargetHealth = function getWallTarget() {
 	let level = this.getLevel();		
 	let t = [
 		0,
-		10000,
 		25000,
 		50000,
+		75000,
 		100000,
 		500000,
 		1000000,
@@ -156,6 +156,14 @@ Room.prototype.getSources = function getSources(type, notEmpty=true){
     return sources;
 };
 
+Room.prototype.getHostiles = function getHostiles(creep=null){
+    if(creep){
+        return creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+    }else{
+        return this.find(FIND_HOSTILE_CREEPS);
+    }
+}
+
 Room.prototype.getStructures = function getStructures(objects,creep,options){
     /*
 	Options:
@@ -183,13 +191,13 @@ Room.prototype.getStructures = function getStructures(objects,creep,options){
             });
         }
     }else{
-        stores = creep.room.find(FIND_STRUCTURES,{
+        stores = this.find(FIND_STRUCTURES,{
             filter: (structure) => {
                 return this.filterStructures(options,objects,structure);
             }
         });
         if(!stores){
-            stores = creep.room.find(FIND_MY_STRUCTURES,{
+            stores = this.find(FIND_MY_STRUCTURES,{
                 filter: (structure) => {
                     return this.filterStructures(options,objects,structure);
                 }
@@ -204,7 +212,7 @@ Room.prototype.getConstructionSites = function getConstructionSites(creep,nearTo
     if(nearToCreep){
         css = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
     }else{
-        css = creep.room.find(FIND_CONSTRUCTION_SITES);
+        css = this.find(FIND_CONSTRUCTION_SITES);
     }
     return css;
 };
@@ -232,7 +240,11 @@ Room.prototype.filterStructures = function filterStructures(options,objects,stru
     	if(!options.inverted) {
             loadOk = (structType) ? _.sum(structure.store) < structure.storeCapacity :  structure.energy < structure.energyCapacity;
         }else{
-			loadOk = (structType) ? _.sum(structure.store) > 0 : structure.energy > 0;
+            let min = 0;
+            if(options.min){
+                min = options.min;
+            }
+			loadOk = (structType) ? _.sum(structure.store) > min : structure.energy > min;
 		}
     }
     return typeOk && loadOk;

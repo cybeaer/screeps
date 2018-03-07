@@ -1,15 +1,50 @@
 'use strict';
 
+global.MINING_FLAG = 1;
+global.BUILDING_FLAG = 0;
+
 module.exports = {
-    harvest(creep,idx,type=RESOURCE_ENERGY){
-        let sources = creep.room.getSources(type);
-        if(sources){
-            if(!sources[idx]){
-                idx = 0;
+    claimer(creep){
+        if(creep.room.name === creep.memory.room){
+            let constructs = creep.room.find(FIND_STRUCTURES,{
+                filter: {structureType: STRUCTURE_WALL}
+            });
+            if(constructs[15]){
+                if(creep.attack(constructs[15]) === ERR_NOT_IN_RANGE){
+                    creep.moveTo(constructs[15]);
+                }
+            }else{
+                if(creep.claimController(creep.room.controller) === ERR_NOT_IN_RANGE){
+                    creep.moveTo(creep.room.controller);
+                    if(constructs[15]){
+                        if(creep.attack(constructs[15]) === ERR_NOT_IN_RANGE){
+                            creep.moveTo(constructs[15]);
+                        }
+                    }
+                }else{
+                    manualSpawn(creep.memory.origSpawn,'builder',1,creep.memory.room);
+                    creep.memory.role =  'builder';
+                    creep.memory.job =  'worker';
+                    creep.memory.roaming =  false;
+                }
             }
-            if(creep.harvest(sources[idx]) === ERR_NOT_IN_RANGE){
+        }else{
+            const target = new RoomPosition(25,25,creep.memory.room);
+            const path = creep.pos.findPathTo(target);
+            if(path){
+                creep.move(path[0].direction);
+            }
+        }
+    },
+    harvest(creep,idx,type=RESOURCE_ENERGY){
+        //Game.flags[creep.room.name+'_mining'].pos.findClosestByRange(FIND_SOURCES)
+        //let sources = creep.room.getSources(type);
+        let targetFlag = (idx===MINING_FLAG) ? '_mining' : '_building';
+        let sources = Game.flags[creep.room.name+targetFlag].pos.findClosestByRange(FIND_SOURCES)
+        if(sources){
+            if(creep.harvest(sources) === ERR_NOT_IN_RANGE){
                 creep.say('⚡');
-                creep.moveTo(sources[idx],{reusePath: 20, visualizePathStyle: roles[creep.getRole()].path});
+                creep.moveTo(sources,{reusePath: 20, visualizePathStyle: roles[creep.getRole()].path});
             }
         }else{
             this.nothingTodo(creep);
@@ -26,7 +61,7 @@ module.exports = {
     mining(creep, type=RESOURCE_ENERGY){
         this.loadStatus(creep);
         if(!creep.memory.loaded){ // load up
-            this.harvest(creep,0,type);
+            this.harvest(creep,MINING_FLAG,type);
         }else{
             let options = {
                 nearToCreep: true,
@@ -41,6 +76,9 @@ module.exports = {
             if(!stores){
                 stores = creep.room.getStructures([STRUCTURE_SPAWN],creep,options);
             }
+            if(!stores){
+                stores = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);
+            }
             if(stores){
                 if(creep.transfer(stores,creep.getType()) === ERR_NOT_IN_RANGE){
                     creep.say('🏃');
@@ -54,7 +92,7 @@ module.exports = {
     upgrading(creep){
         this.loadStatus(creep);
         if(!creep.memory.loaded) { // load up
-            this.harvest(creep,1,RESOURCE_ENERGY);
+            this.harvest(creep,0,RESOURCE_ENERGY);
         }else {
             if (creep.room.controller) {
                 if (creep.upgradeController(creep.room.controller) === ERR_NOT_IN_RANGE) {
@@ -67,7 +105,7 @@ module.exports = {
     building(creep){
         this.loadStatus(creep);
         if(!creep.memory.loaded) { // load up
-            this.harvest(creep,1,RESOURCE_ENERGY);
+            this.harvest(creep,0,RESOURCE_ENERGY);
             creep.memory.buildingId = 0;
         }else {
             let target = creep.room.getConstructionSites(creep,true);
@@ -126,7 +164,8 @@ module.exports = {
             nearToCreep: true,
             storeRelated: true,
             type: creep.getType(),
-            inverted: true
+            inverted: true,
+            min: 200
         };
         if(!creep.memory.loaded) { // load up
             if(from) {
@@ -138,7 +177,7 @@ module.exports = {
                 this.nothingTodo(creep);
             }
         }else{
-            if(to) {
+            if(to && !(from.structureType === to.structureType)) {
                 options.inverted = false;
                 if (creep.transfer(to, creep.getType()) === ERR_NOT_IN_RANGE) {
                     creep.say('🏃');
@@ -150,20 +189,39 @@ module.exports = {
         }
     },
     transporter(creep){
+        let options = {
+            nearToCreep: true,
+            storeRelated: true,
+            type: creep.getType(),
+            inverted: true,
+            min: 200
+        };
+        let from = null;
+        let to = null;
         switch(creep.getRole()){
             case ROLE_DISPATCHER:
                 this.loadStatus(creep);
-                let options = {
-                    nearToCreep: true,
-                    storeRelated: true,
-                    type: creep.getType(),
-                    inverted: true
-                };
-                let from = creep.room.getStructures([STRUCTURE_CONTAINER],creep,options);
+                from = creep.room.getStructures([STRUCTURE_CONTAINER],creep,options);
+                if(!from){
+                    from = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);
+                }
                 options.inverted = false;
-                let to = creep.room.getStructures([STRUCTURE_SPAWN,STRUCTURE_EXTENSION],creep,options);
+                to = creep.room.getStructures([STRUCTURE_SPAWN,STRUCTURE_EXTENSION],creep,options);
+                if(!to){
+                    to = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);    
+                }
                 this.dispatch(creep,from,to);
                 break;
+            case ROLE_RECHARGER:
+                this.loadStatus(creep);
+                from = creep.room.getStructures([STRUCTURE_CONTAINER],creep,options);
+                if(!from){
+                    from = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);    
+                }
+                options.inverted = false;
+                to = creep.room.getStructures([STRUCTURE_TOWER],creep,options);
+                this.dispatch(creep,from,to);
+                break;    
             default:
                 creep.say('*'+creep.getRole()+'*');
                 break;
@@ -176,6 +234,7 @@ module.exports = {
                 creep.heal(creep);
             }
             if(creep.attack(closestHostile) === ERR_NOT_IN_RANGE ){
+                //rangedAttack
                 creep.moveTo(closestHostile);
             }
         }else{

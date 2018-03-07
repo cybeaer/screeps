@@ -21,9 +21,14 @@ global.manualSpawn = function manualSpawn(theSpawnName,role,lvl,room=''){
             role: role,
             job: roles[role].job,
             lvl: lvl,
+            origSpawn: theSpawnName,
             room: room
         }};
-    return theSpawn.spawnCreep(roles[role].body[lvl],role+'(manual)'+Game.time,mem)
+    _.each(roles[role].memory,function(entry,key){
+            mem.memory[key] = entry;
+        });
+    let ret = theSpawn.spawnCreep(roles[role].body[lvl],role+'(manual)'+Game.time,mem);
+    return spawnMessageNoEnergy(ret, roles[role].body[lvl]);
 };
 
 global.claimRoom = function claimRoom(from,room){
@@ -39,10 +44,31 @@ global.claimRoom = function claimRoom(from,room){
             job: 'claimer',
             lvl: 1,
             room: room,
-            roaming: false
+            roaming: true
         }};
-    return theSpawn.spawnCreep([CLAIM,MOVE,MOVE,MOVE],'Claimer('+room+')'+Game.time,mem)
+    let body = [
+            ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,
+            WORK,
+            CARRY,CARRY,
+            MOVE,MOVE,MOVE,MOVE,MOVE,
+            MOVE,MOVE,MOVE,MOVE,MOVE,
+            CLAIM
+        ];
+    let ret = theSpawn.spawnCreep(body,'Claimer('+room+')'+Game.time,mem)
+    return spawnMessageNoEnergy(ret, body);
 };
+
+global.spawnMessageNoEnergy = function spawnMessageNoEnergy(ret, body){
+    if (ret === ERR_NOT_ENOUGH_ENERGY){
+        let costs = 0;
+        for(let part in body){
+            costs += BODYPART_COST[body[part]];
+        }
+        return 'Not Enough Energy: '+costs;
+    }else{
+        return ret;
+    }
+}
 
 module.exports = {
     cleanUp(){
@@ -53,8 +79,12 @@ module.exports = {
             }
         }
     },
-    moveToRoom(creep,room){
-        //TODO
+    moveToRoom(creep){
+        const target = new RoomPosition(25,25,creep.memory.room);
+        const path = creep.pos.findPathTo(target);
+        if(path){
+            creep.moveByPath(path,{visualizePathStyle: {stroke: '#ffd557'}});
+        }
     },
     work(room){
         _.each(_.filter(Game.creeps, (creep) => (creep.isInRoom(room)&&!creep.isArmy())), (creep)=>{
@@ -66,7 +96,7 @@ module.exports = {
                     creep.room.energyAvailable > creep.room.getLowEnergy() &&
                     creep.memory.lvl === creep.room.getLevel()){
                     this.refreshCreep(creep);
-                }else {
+                }else{
                     if (typeof jobs[creep.memory.job] === 'function') {
                         jobs[creep.memory.job](creep);
                     } else {
@@ -114,6 +144,7 @@ module.exports = {
             upgrader:   _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_UPGRADER) && creep.isInRoom(room))).length,
             builder:    _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_BUILDER) && creep.isInRoom(room))).length,
             dispatcher: _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_DISPATCHER) && creep.isInRoom(room))).length,
+            recharger:  _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_RECHARGER) && creep.isInRoom(room))).length,
             guard:      _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_GUARD) && creep.isInRoom(room))).length
         };
     },
@@ -141,10 +172,10 @@ module.exports = {
             mem.memory[key] = entry;
         });
         let spawnResult = theSpawn.spawnCreep(roles[role].body[lvl],role+'('+room+')'+Game.time,mem);
-        console.log(spawnResult);
         if(spawnResult === ERR_NOT_ENOUGH_ENERGY && roles[role].fallback){
             mem.memory.lvl = 1;
             return theSpawn.spawnCreep(roles[role].body[1],role+'('+room+')'+Game.time,mem);
         }
     }
+    
 };

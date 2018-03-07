@@ -11,10 +11,10 @@
 
 #### define population requirements / bodies till lvl
 * 2 ✓
-* 3
-* 4
-* 5
-* 6
+* 3 ✓
+* 4 ✓
+* 5 ✓
+* 6 ✓
 * 7
 * 8
 
@@ -24,13 +24,13 @@
 * builder ✓
 * energy dispatcher ✓
 * guard ✓
-* claimer
-* tower recharger
+* claimer ✓
+* tower recharger ✓
 * mineral miner
 * mineral transporter
 
 #### code functions
-* moveToRoom()
+* moveToRoom() ✓
 
 #### add military functions
 * military()

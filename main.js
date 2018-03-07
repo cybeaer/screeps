@@ -13,6 +13,7 @@ module.exports.loop = function () {
         population.checkPopulation(room.name);
         population.work(room.name);
         infrastructure.spawnMessage(room.name);
+        infrastructure.towers(room.name);
     });
     population.checkMilitary();
     population.military();
