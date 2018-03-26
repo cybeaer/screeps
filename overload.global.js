@@ -1,5 +1,7 @@
 'use strict';
 
+global.RESOURCE_MINERAL = 'mineral';
+
 global.HEARTBEAT_LOW     = 'hb_low';
 global.HEARTBEAT_HIGH    = 'hb_high';
 
@@ -11,6 +13,8 @@ global.ROLE_DISPATCHER  = 'dispatcher';
 global.ROLE_RECHARGER   = 'recharger';
 global.ROLE_GUARD       = 'guard';
 global.ROLE_CLAIMER     = 'claimer';
+global.ROLE_GRAVEDIGGER = 'gravedigger';
+global.ROLE_MINECART    = 'minecart';
 
 global.soldiers = {
     //TODO
@@ -58,7 +62,7 @@ global.roles = {
         role: ROLE_MINER,
         fallback: true,
         memory: {
-            type: RESOURCE_ENERGY
+            type: null
         },
         reuse: 20,
         path: {
@@ -154,7 +158,7 @@ global.roles = {
         ],
         job: 'transporter',
         role: ROLE_RECHARGER,
-        fallback: false,
+        fallback: true,
         memory: {
             type: RESOURCE_ENERGY
         },
@@ -236,6 +240,57 @@ global.roles = {
             lineStyle: 'dashed',
             opacity: 0.2
         }
+    },
+    gravedigger: {
+        body: [
+            [],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+        ],
+        job: 'transporter',
+        role: ROLE_MINECART,
+        fallback: true,
+        memory: {
+        },
+        reuse: 20,
+        path: {
+            stroke: '#ffd557',
+            lineStyle: 'dashed',
+            opacity: 0.2
+        }
+    },
+    minecart: {
+        body: [
+            [],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+            [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
+        ],
+        job: 'transporter',
+        role: ROLE_MINECART,
+        fallback: true,
+        memory: {
+            type: null,
+            from: null,
+            to: null
+        },
+        reuse: 20,
+        path: {
+            stroke: '#ffd557',
+            lineStyle: 'dashed',
+            opacity: 0.2
+        }
     }
 };
 
@@ -254,12 +309,12 @@ global.roles = {
 
 global.requirements = [
     {},
-    { harvester: 1, upgrader: 1, builder: 2, guard: 1},  // Room Lvl 1
-    { harvester: 1, dispatcher: 1, upgrader: 1, builder: 2, guard: 1, recharger: 1 },  // Room Lvl 2
-    { harvester: 1, dispatcher: 1, upgrader: 1, builder: 2, guard: 1, recharger: 1 },  // Room Lvl 3
-    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 2, recharger: 1 },  // Room Lvl 4
-    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 2, recharger: 1 },  // Room Lvl 5
-    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 3, recharger: 1 },  // Room Lvl 6
-    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 3, recharger: 1 },  // Room Lvl 7
-    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, guard: 3, recharger: 1 },  // Room Lvl 8
+    { harvester: 1, upgrader: 1, builder: 2},  // Room Lvl 1
+    { harvester: 1, dispatcher: 1, upgrader: 1, builder: 2},  // Room Lvl 2
+    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, recharger: 1, guard: 1},  // Room Lvl 3
+    { harvester: 1, dispatcher: 1, upgrader: 2, builder: 2, recharger: 1, guard: 1},  // Room Lvl 4
+    { harvester: 2, dispatcher: 1, upgrader: 2, builder: 2, recharger: 1, guard: 1},  // Room Lvl 5
+    { harvester: 2, dispatcher: 1, upgrader: 2, builder: 2, recharger: 1, miner: 1, minecart: 1, gravedigger: 1, guard: 2},  // Room Lvl 6
+    { harvester: 2, dispatcher: 1, upgrader: 2, builder: 2, recharger: 1, miner: 1, minecart: 1, gravedigger: 1, guard: 2},  // Room Lvl 7
+    { harvester: 2, dispatcher: 1, upgrader: 2, builder: 2, recharger: 1, miner: 1, minecart: 1, gravedigger: 1, guard: 2},  // Room Lvl 8
 ];

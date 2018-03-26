@@ -17,4 +17,4 @@ module.exports.loop = function () {
     });
     population.checkMilitary();
     population.military();
-}
+};

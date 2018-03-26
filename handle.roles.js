@@ -35,8 +35,15 @@ module.exports = {
         }
     },
     harvest(creep,idx,type=RESOURCE_ENERGY){
-        let targetFlag = (idx===MINING_FLAG) ? '_mining' : '_building';
-        let sources = Game.flags[creep.room.name+targetFlag].pos.findClosestByRange(FIND_SOURCES)
+        let sources;
+        if(type===RESOURCE_ENERGY) {
+            let targetFlag = (idx === MINING_FLAG) ? '_mining' : '_building';
+            sources = Game.flags[creep.room.name + targetFlag].pos.findClosestByRange(FIND_SOURCES)
+        }else{
+            sources = creep.room.find(FIND_MINERALS);
+            sources = sources[0];
+            creep.memory.type = sources.mineralType;
+        }
         if(sources){
             if(creep.harvest(sources) === ERR_NOT_IN_RANGE){
                 creep.say('⚡');
@@ -66,11 +73,13 @@ module.exports = {
                 debug: true
             };
             let stores = creep.room.getStructures([STRUCTURE_CONTAINER],creep,options);
-            if(!stores){
-                stores = creep.room.getStructures([STRUCTURE_EXTENSION],creep,options);
-            }
-            if(!stores){
-                stores = creep.room.getStructures([STRUCTURE_SPAWN],creep,options);
+            if(type === RESOURCE_ENERGY) {
+                if (!stores) {
+                    stores = creep.room.getStructures([STRUCTURE_EXTENSION], creep, options);
+                }
+                if (!stores) {
+                    stores = creep.room.getStructures([STRUCTURE_SPAWN], creep, options);
+                }
             }
             if(!stores){
                 stores = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);
@@ -111,16 +120,20 @@ module.exports = {
                     creep.moveTo(target,{reusePath: roles[creep.getRole()].reuse, visualizePathStyle: roles[creep.getRole()].path});
                 }
             }else {
+                let theRoom = creep.room
                 if(creep.memory.buildingId === 0 || creep.memory.buildingId === undefined){
-                    target = creep.room.getRepair(STRUCT_HP_CRITICAL);
-                    if(!target){
-                        target = creep.room.getRepair(STRUCT_HP_MAINTAINANCE);
+                    let target = theRoom.getRepair(STRUCT_HP_CRITICAL);
+                    if(!target[0]){
+                        target = theRoom.getRepair(STRUCT_HP_MAINTAINANCE);
                     }
-                    if(target){
-                        target = target[0];
-                    }
-                } else {
+                    if(target[0])
+                        creep.memory.buildingId = target[0].id;
+                    else
+                        creep.memory.buildingId = 0;
+                }
+                if(creep.memory.buildingId !== 0){
                     target = Game.getObjectById(creep.memory.buildingId);
+                
                     if(target.hits === target.hitsMax){
                         target = null;
                         creep.memory.buildingId = 0;
@@ -145,7 +158,7 @@ module.exports = {
                 this.mining(creep);
                 break;
             case ROLE_MINER:
-                this.mining(creep);
+                this.mining(creep, RESOURCE_MINERAL);
                 break;
             case ROLE_UPGRADER:
                 this.upgrading(creep);
@@ -176,15 +189,32 @@ module.exports = {
                 this.nothingTodo(creep);
             }
         }else{
-            if(to && !(from.structureType === to.structureType)) {
-                options.inverted = false;
-                if (creep.transfer(to, creep.getType()) === ERR_NOT_IN_RANGE) {
-                    creep.say('🏃');
-                    creep.moveTo(to, {reusePath: roles[creep.getRole()].reuse, visualizePathStyle: roles[creep.getRole()].path});
-                }
+            if(to) {
+                //if(!(from.structureType === to.structureType)) {
+                    options.inverted = false;
+                    if (creep.transfer(to, creep.getType()) === ERR_NOT_IN_RANGE) {
+                        creep.say('🏃');
+                        creep.moveTo(to, {reusePath: roles[creep.getRole()].reuse, visualizePathStyle: roles[creep.getRole()].path});
+                    }
+                //}
             }else{
                 this.nothingTodo(creep);
             }
+        }
+    },
+    collect(creep,from,to){
+        this.loadStatus(creep);
+        if(!creep.memory.loaded) { // load up
+            if (creep.pickup(from) === ERR_NOT_IN_RANGE) {
+                creep.moveTo(from, {reusePath: roles[creep.getRole()].reuse, visualizePathStyle: roles[creep.getRole()].path});
+            }
+        }else{
+            _.forEach(creep.carry, (resource,type) => {
+                if (creep.transfer(to, type) === ERR_NOT_IN_RANGE) {
+                    creep.say('🏃');
+                    creep.moveTo(to, {reusePath: roles[creep.getRole()].reuse, visualizePathStyle: roles[creep.getRole()].path});
+                }
+            });
         }
     },
     transporter(creep){
@@ -209,7 +239,7 @@ module.exports = {
                 if(!to){
                     to = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);    
                 }
-                if(from && to) {
+                if(from !==  to) {
                     this.dispatch(creep, from, to);
                 }
                 break;
@@ -221,10 +251,46 @@ module.exports = {
                 }
                 options.inverted = false;
                 to = creep.room.getStructures([STRUCTURE_TOWER],creep,options);
+                if(from !== to) {
+                    this.dispatch(creep, from, to);
+                }
+                break;
+            case ROLE_GRAVEDIGGER:
+                this.loadStatus(creep);
+                let sources = creep.room.find(FIND_DROPPED_RESOURCES);
+                if(!sources)
+                    sources = creep.room.find(FIND_DROPPED_ENERGY);
+                if(!sources)
+                    sources = creep.room.find(FIND_TOMBSTONES);
+                if(sources)
+                    from = sources[0];
+                options.inverted = false;
+                to = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);
+                if(from && to) {
+                    this.collect(creep, from, to);
+                }
+                break;
+            case ROLE_MINECART:
+                this.loadStatus(creep);
+                if(!creep.getType()) {
+                    let sources = creep.room.find(FIND_MINERALS);
+                    creep.memory.type = sources[0].mineralType;
+                    options.type = creep.getType();
+                }
+                options.min = 0;
+                from = creep.room.getStructures([STRUCTURE_CONTAINER],creep,options);
+                if(!from){
+                    from = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);
+                }
+                options.inverted = false;
+                to = creep.room.getStructures([STRUCTURE_TERMINAL],creep,options);
+                if(!to){
+                    to = creep.room.getStructures([STRUCTURE_STORAGE],creep,options);
+                }
                 if(from && to) {
                     this.dispatch(creep, from, to);
                 }
-                break;    
+                break;
             default:
                 creep.say('*'+creep.getRole()+'*');
                 break;

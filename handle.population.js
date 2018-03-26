@@ -3,6 +3,13 @@
 let jobs = require('handle.roles');
 let army = require('handle.army');
 
+let lastEnergyPercentage = 0;
+
+global.precisionRound = function precisionRound(number, precision) {
+  var factor = Math.pow(10, precision);
+  return Math.round(number * factor) / factor;
+}
+
 global.manualSpawn = function manualSpawn(theSpawnName,role,lvl,room=''){
     if(roles[role]===undefined){
         return 'Role '+role+' does not exist!';
@@ -140,15 +147,27 @@ module.exports = {
     },
     getPopulation(room){
         return {
-            harvester:  _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_HARVESTER) && creep.isInRoom(room))).length,
-            upgrader:   _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_UPGRADER) && creep.isInRoom(room))).length,
-            builder:    _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_BUILDER) && creep.isInRoom(room))).length,
-            dispatcher: _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_DISPATCHER) && creep.isInRoom(room))).length,
-            recharger:  _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_RECHARGER) && creep.isInRoom(room))).length,
-            guard:      _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_GUARD) && creep.isInRoom(room))).length
+            harvester:   _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_HARVESTER) && creep.isInRoom(room))).length,
+            miner:       _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_MINER) && creep.isInRoom(room))).length,
+            upgrader:    _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_UPGRADER) && creep.isInRoom(room))).length,
+            builder:     _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_BUILDER) && creep.isInRoom(room))).length,
+            dispatcher:  _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_DISPATCHER) && creep.isInRoom(room))).length,
+            recharger:   _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_RECHARGER) && creep.isInRoom(room))).length,
+            guard:       _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_GUARD) && creep.isInRoom(room))).length,
+            gravedigger: _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_GRAVEDIGGER) && creep.isInRoom(room))).length,
+            minecart:    _.filter(Game.creeps, (creep) => (creep.isRole(ROLE_MINECART) && creep.isInRoom(room))).length
         };
     },
     create(room,role,lvl,memory=null){
+        let hostiles = Game.rooms[room].getHostiles();
+        let percentageEnergyAvailable = precisionRound((100 / Game.rooms[room].energyCapacityAvailable) * Game.rooms[room].energyAvailable,0);
+        if(role === ROLE_GUARD && percentageEnergyAvailable < 95 && !hostiles[0]){
+            if(lastEnergyPercentage !== percentageEnergyAvailable){
+                console.log('Resources in room '+room+' to low for Guard ('+percentageEnergyAvailable+'% / '+Game.rooms[room].energyAvailable+')');
+                lastEnergyPercentage = percentageEnergyAvailable;
+            }
+            return ERR_NOT_ENOUGH_ENERGY;
+        }
         let theSpawn = Game.rooms[room].findFirstSpawn();
         if(theSpawn === undefined){
             return -99;
@@ -172,10 +191,15 @@ module.exports = {
             mem.memory[key] = entry;
         });
         let spawnResult = theSpawn.spawnCreep(roles[role].body[lvl],role+'('+room+')'+Game.time,mem);
-        if(spawnResult === ERR_NOT_ENOUGH_ENERGY && roles[role].fallback){
-            mem.memory.lvl = 1;
-            return theSpawn.spawnCreep(roles[role].body[1],role+'('+room+')'+Game.time,mem);
+        if(spawnResult === ERR_NOT_ENOUGH_ENERGY){
+            if(lastEnergyPercentage !== percentageEnergyAvailable){
+                console.log('Resources in room '+room+' to low for lvl'+lvl+' '+role+' ('+percentageEnergyAvailable+'% / '+Game.rooms[room].energyAvailable+')');
+                lastEnergyPercentage = percentageEnergyAvailable;
+            }
+            if(roles[role].fallback) {
+                mem.memory.lvl = 1;
+                return theSpawn.spawnCreep(roles[role].body[1], role + '(' + room + ')' + Game.time, mem);
+            }
         }
     }
-    
 };

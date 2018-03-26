@@ -37,10 +37,10 @@ Room.prototype.getLowEnergy = function getLowEnergy(){
             returnValue = 500;
             break;
         case 4:
-            returnValue = 800;
-            break;
         case 5:
         case 6:
+            returnValue = 800;
+            break;
         case 7:
         case 8:
             returnValue = 1000;
@@ -49,7 +49,7 @@ Room.prototype.getLowEnergy = function getLowEnergy(){
     return returnValue;
 };
 
-Room.prototype.getLevelByAvailableEnergy = function getLevel() {
+Room.prototype.getLevelByAvailableEnergy = function getLevelByAvailableEnergy() {
 	if (this.energyAvailable < 550)
 		return 1;
 	else if (this.energyAvailable < 800)
@@ -244,8 +244,8 @@ Room.prototype.filterStructures = function filterStructures(options,objects,stru
             if(options.min){
                 min = options.min;
             }
-			loadOk = (structType) ? _.sum(structure.store) > min : structure.energy > min;
+			loadOk = (structType) ? _.sum(structure.store) > min && structure.store[options.type] : structure.energy > min;
 		}
     }
     return typeOk && loadOk;
-}
+};

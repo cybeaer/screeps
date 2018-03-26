@@ -8,9 +8,16 @@ module.exports = {
                 let spawningCreep = Game.creeps[theSpawn.spawning.name];
                 Game.rooms[room].visual.text(
                     'new ' + spawningCreep.getJob()+' / '+spawningCreep.getRole(),
-                    theSpawn.pos.x + 1,
+                    theSpawn.pos.x,
                     theSpawn.pos.y + 1,
-                    {align: 'left', opacity: 0.8}
+                    {
+                        align: 'left',
+                        opacity: 0.8,
+                        color: '#97caef',
+                        stroke: 'black',
+                        strokeWidth: 0.3,
+                        align: 'center'
+                    }
                 );
             }
         }
