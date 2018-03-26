@@ -26,8 +26,9 @@
 * guard ✓
 * claimer ✓
 * tower recharger ✓
-* mineral miner
-* mineral transporter
+* mineral miner ✓
+* mineral transporter ✓
+* gravedigger ✓
 
 #### code functions
 * moveToRoom() ✓
